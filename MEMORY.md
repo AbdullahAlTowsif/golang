@@ -32,5 +32,3 @@ Different languages handle memory management in fundamentally different ways:
 | A pointer or reference to dynamically allocated memory | **Heap** (though the pointer itself is on the stack) |
 
 > 💡 **Key Takeaway:** Do not assume built-in functions always use the heap. If you are working in a high-level managed language (Python, JS), expect the heap for objects. If you are in a systems language (C, C++, Rust), it depends on the return type and how the function is written.
-
-Which programming language are you currently working with? I can give you a much more specific answer based on its memory model.
