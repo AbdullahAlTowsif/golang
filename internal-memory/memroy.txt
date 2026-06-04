@@ -1,0 +1,16 @@
+Code Segment (Read-only): --> it comes from compilation phase
+* All functions goes under this Segment
+* Ex- add, main, init functions
+* Const variable are also stored here.
+* Code Segment ekta binary file er moddhe thake. Binary file theke jokhon run kori tokhon RAM er moddhe ase code Segment
+
+
+Data Segment:
+* All global variable declarations goes under this Segment except constant & functions
+* a
+* Global scope
+
+Stack:
+* Functions are executed in this memeory
+* ja thake ta local scope
+Heap: 
