@@ -62,4 +62,6 @@ theke shore ekhon process k Point korbe. Let's start the procedure:
 .
 .
 
+OS thread hocce Process er bhitor jta thake oita.
+
 */
