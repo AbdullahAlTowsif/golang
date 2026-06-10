@@ -27,7 +27,7 @@ func calculate() (result int) {
 		fmt.Println("defer:", result)
 	}
 
-	defer show() // closure --> show(), result
+	defer show() // closure --> show(), result --> jodi parent stack frame exist kore tahole reference use hobe, jodi na kore tahole copy of result show() er stack frame e store hobe
 
 	result = 5
 	p := func (a int) {
