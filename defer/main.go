@@ -19,6 +19,7 @@ func sum(a int, b int) (result int) {
 }
 
 
+// defer uses defer list stack pointer
 func calculate() (result int) {
 	fmt.Println("Inside named returned value function")
 	fmt.Println("first:", result)
@@ -27,7 +28,8 @@ func calculate() (result int) {
 		fmt.Println("defer:", result)
 	}
 
-	defer show() // closure --> show(), result --> jodi parent stack frame exist kore tahole reference use hobe, jodi na kore tahole copy of result show() er stack frame e store hobe
+	// closure --> show(), result --> jodi parent stack frame exist kore tahole reference use hobe, jodi na kore tahole copy of result show() er stack frame e store hobe
+	defer show()
 
 	result = 5
 	p := func (a int) {
