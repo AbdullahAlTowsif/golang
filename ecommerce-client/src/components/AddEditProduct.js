@@ -117,7 +117,10 @@ function AddEditProduct({ product, onSave, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSave(formData);
+    await onSave({
+      ...formData,
+      price: Number(formData.price),
+    });
     setFormData({
       title: '',
       description: '',

@@ -16,11 +16,11 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Product struct {
-	ID          int `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
 	Price       float64 `json:"price"`
-	ImgUrl      string `json:"imageUrl"`
+	ImgUrl      string  `json:"imageUrl"`
 }
 
 var productList []Product
@@ -37,6 +37,48 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(productList)
 }
 
+func createProduct(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
+
+	if r.Method != "POST" {
+		http.Error(w, "Please give me POST request", 400)
+		return
+	}
+
+	/*
+		1. take body information (description, imageUrl, price, title) from r.Body
+		2. create an instance using Product struct with the body information
+		3. append the instance into productList
+	*/
+
+	var newProduct Product
+	decoder := json.NewDecoder(r.Body)
+	// frontend theke json asbe oitake amra decode kore struct/js object e convert krbo.
+	err := decoder.Decode(&newProduct)
+
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Please give me a valid json", 400)
+		return
+	}
+
+	newProduct.ID = len(productList) + 1
+	productList = append(productList, newProduct)
+	w.WriteHeader(201)
+
+	// backend theke kono information jodi JSON e pathaite chai tahole encoder
+	encoder := json.NewEncoder(w)
+	encoder.Encode(newProduct)
+}
+
 func main() {
 	mux := http.NewServeMux() //router --> mux
 
@@ -45,6 +87,7 @@ func main() {
 	mux.HandleFunc("/about", aboutHandler)
 
 	mux.HandleFunc("/products", getProducts)
+	mux.HandleFunc("/create-product", createProduct)
 
 	fmt.Println("Server running on: 5000")
 
@@ -55,52 +98,52 @@ func main() {
 }
 
 func init() {
-	prd1 := Product {
-		ID: 1,
-		Title: "Orange",
+	prd1 := Product{
+		ID:          1,
+		Title:       "Orange",
 		Description: "Orange is Yummy! I love orange",
-		Price: 100,
-		ImgUrl: "https://www.chemwatch.net/wp-content/uploads/2021/11/image-6-1024x682.jpeg",
+		Price:       100,
+		ImgUrl:      "https://www.chemwatch.net/wp-content/uploads/2021/11/image-6-1024x682.jpeg",
 	}
 
-	prd2 := Product {
-		ID: 2,
-		Title: "Apple",
+	prd2 := Product{
+		ID:          2,
+		Title:       "Apple",
 		Description: "Apple is Yummy! I love Apple",
-		Price: 120,
-		ImgUrl: "https://cdn.mos.cms.futurecdn.net/38Moe9n3b72uVEf2Ti7KmV.jpg",
+		Price:       120,
+		ImgUrl:      "https://cdn.mos.cms.futurecdn.net/38Moe9n3b72uVEf2Ti7KmV.jpg",
 	}
 
-	prd3 := Product {
-		ID: 3,
-		Title: "Banana",
+	prd3 := Product{
+		ID:          3,
+		Title:       "Banana",
 		Description: "Banana is Yummy! I love Banana",
-		Price: 20,
-		ImgUrl: "https://www.dole.com/sites/default/files/media/2025-01/banana-cavendish_0.png",
+		Price:       20,
+		ImgUrl:      "https://www.dole.com/sites/default/files/media/2025-01/banana-cavendish_0.png",
 	}
 
-	prd4 := Product {
-		ID: 4,
-		Title: "Grape",
+	prd4 := Product{
+		ID:          4,
+		Title:       "Grape",
 		Description: "Grape is Yummy! I love Grape",
-		Price: 180,
-		ImgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Grapes%2C_Rostov-on-Don%2C_Russia.jpg/1280px-Grapes%2C_Rostov-on-Don%2C_Russia.jpg",
+		Price:       180,
+		ImgUrl:      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Grapes%2C_Rostov-on-Don%2C_Russia.jpg/1280px-Grapes%2C_Rostov-on-Don%2C_Russia.jpg",
 	}
 
-	prd5 := Product {
-		ID: 5,
-		Title: "Mango",
+	prd5 := Product{
+		ID:          5,
+		Title:       "Mango",
 		Description: "Mango is my favorite! I love Mango",
-		Price: 80,
-		ImgUrl: "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
+		Price:       80,
+		ImgUrl:      "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
 	}
 
-	prd6 := Product {
-		ID: 6,
-		Title: "Jackfruit",
+	prd6 := Product{
+		ID:          6,
+		Title:       "Jackfruit",
 		Description: "Jackfruit is Yummy! I love Jackfruit",
-		Price: 140,
-		ImgUrl: "https://www.gardenia.net/wp-content/uploads/2025/05/shutterstock_2453997129.jpg",
+		Price:       140,
+		ImgUrl:      "https://www.gardenia.net/wp-content/uploads/2025/05/shutterstock_2453997129.jpg",
 	}
 
 	productList = append(productList, prd1)
