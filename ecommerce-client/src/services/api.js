@@ -7,6 +7,9 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    // jodi custom headers add kori tahole oi request ta complex request hoye jay.
+    // se khetre backend nije nije OPTION method/Preflight request send kore.
+    'Towsif': 'Hello'
   },
 });
 

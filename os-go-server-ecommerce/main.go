@@ -28,6 +28,11 @@ var productList []Product
 func getProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Towsif")
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
 	if r.Method != "GET" {
 		http.Error(w, "Please give me GET request", 400)
 		return
