@@ -2,18 +2,18 @@ package cmd
 
 import (
 	"ecommerce/global_router"
-	"ecommerce/handlers"
+	"ecommerce/middleware"
 	"fmt"
 	"net/http"
 )
 
 func Serve() {
+	manager := middleware.NewManager()
+	manager.Use(middleware.Logger)
 	mux := http.NewServeMux() //router --> mux
 
 	// route
-	mux.Handle("GET /products", http.HandlerFunc(handlers.GetProducts))
-	mux.Handle("POST /products", http.HandlerFunc(handlers.CreateProduct))
-	mux.Handle("GET /products/{id}", http.HandlerFunc(handlers.GetProductById))
+	initRoutes(mux, manager)
 
 	globalRouter := global_router.GlobalRouter(mux)
 
