@@ -11,6 +11,7 @@ func main() {
 
 
 /*
+**OS GO SERVER RELATED**
 How it works:
 * Client request korse oita gese router er kache.
 * Router GO er j server acher oitar bhitor j Network Interface Card (NIC) ache oitar kache request
