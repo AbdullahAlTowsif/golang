@@ -1,7 +1,6 @@
 package product
 
 import (
-	"ecommerce/database"
 	"ecommerce/util"
 	"net/http"
 	"strconv"
@@ -16,9 +15,16 @@ func (h *Handler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := database.Get(pId)
+	product, err := h.productRepo.Get(pId)
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+
 	if product == nil {
-		util.SendError(w, 404, "Product Not Found")
+		util.SendError(w, http.StatusNotFound, "Product Not Found")
 		return
 	}
 

@@ -1,6 +1,4 @@
-package database
-
-var productList []Product
+package repo
 
 type Product struct {
 	ID          int     `json:"id"`
@@ -10,47 +8,68 @@ type Product struct {
 	ImgUrl      string  `json:"imageUrl"`
 }
 
-func Store(p Product) Product {
-	p.ID = len(productList) + 1
-	productList = append(productList, p)
-	return p
+type ProductRepo interface {
+	Create(p Product) (*Product, error)
+	Get(productId int) (*Product, error)
+	List() ([]*Product, error)
+	Delete(productId int) error
+	Update(p Product) (*Product, error)
 }
 
-func List() []Product {
-	return productList
+type productRepo struct {
+	productList []*Product
 }
 
-func Get(productId int) *Product {
-	for _, product := range productList {
+func NewProductRepo() ProductRepo {
+	repo := &productRepo{}
+
+	generateInitialProducts(repo)
+	return repo
+}
+
+func (r *productRepo) Create(p Product) (*Product, error) {
+	p.ID = len(r.productList) + 1
+	r.productList = append(r.productList, &p)
+	return &p, nil
+}
+
+func (r *productRepo) Get(productId int) (*Product, error) {
+	for _, product := range r.productList {
 		if product.ID == productId {
-			return &product
+			return product, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
-func Update(product Product) {
-	for idx, p := range productList {
-		if p.ID == product.ID {
-			productList[idx] = product
-		}
-	}
+func (r *productRepo) List() ([]*Product, error) {
+	return r.productList, nil
 }
 
-func Delete(productId int) {
-	var tempList []Product = make([]Product, 0)
+func (r *productRepo) Delete(productId int) error {
+	var tempList []*Product
 
-	for _, product := range productList {
+	for _, product := range r.productList {
 		if product.ID != productId {
 			tempList = append(tempList, product)
 		}
 	}
-	productList = tempList
+	r.productList = tempList
+	return nil
 }
 
-func init() {
-	prd1 := Product{
+func (r *productRepo) Update(product Product) (*Product, error) {
+	for idx, p := range r.productList {
+		if p.ID == product.ID {
+			r.productList[idx] = &product
+		}
+	}
+	return &product, nil
+}
+
+func generateInitialProducts(r *productRepo) {
+	prd1 := &Product{
 		ID:          1,
 		Title:       "Orange",
 		Description: "Orange is Yummy! I love orange",
@@ -58,7 +77,7 @@ func init() {
 		ImgUrl:      "https://www.chemwatch.net/wp-content/uploads/2021/11/image-6-1024x682.jpeg",
 	}
 
-	prd2 := Product{
+	prd2 := &Product{
 		ID:          2,
 		Title:       "Apple",
 		Description: "Apple is Yummy! I love Apple",
@@ -66,7 +85,7 @@ func init() {
 		ImgUrl:      "https://cdn.mos.cms.futurecdn.net/38Moe9n3b72uVEf2Ti7KmV.jpg",
 	}
 
-	prd3 := Product{
+	prd3 := &Product{
 		ID:          3,
 		Title:       "Banana",
 		Description: "Banana is Yummy! I love Banana",
@@ -74,7 +93,7 @@ func init() {
 		ImgUrl:      "https://www.dole.com/sites/default/files/media/2025-01/banana-cavendish_0.png",
 	}
 
-	prd4 := Product{
+	prd4 := &Product{
 		ID:          4,
 		Title:       "Grape",
 		Description: "Grape is Yummy! I love Grape",
@@ -82,7 +101,7 @@ func init() {
 		ImgUrl:      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Grapes%2C_Rostov-on-Don%2C_Russia.jpg/1280px-Grapes%2C_Rostov-on-Don%2C_Russia.jpg",
 	}
 
-	prd5 := Product{
+	prd5 := &Product{
 		ID:          5,
 		Title:       "Mango",
 		Description: "Mango is my favorite! I love Mango",
@@ -90,7 +109,7 @@ func init() {
 		ImgUrl:      "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
 	}
 
-	prd6 := Product{
+	prd6 := &Product{
 		ID:          6,
 		Title:       "Jackfruit",
 		Description: "Jackfruit is Yummy! I love Jackfruit",
@@ -98,10 +117,10 @@ func init() {
 		ImgUrl:      "https://www.gardenia.net/wp-content/uploads/2025/05/shutterstock_2453997129.jpg",
 	}
 
-	productList = append(productList, prd1)
-	productList = append(productList, prd2)
-	productList = append(productList, prd3)
-	productList = append(productList, prd4)
-	productList = append(productList, prd5)
-	productList = append(productList, prd6)
+	r.productList = append(r.productList, prd2)
+	r.productList = append(r.productList, prd3)
+	r.productList = append(r.productList, prd1)
+	r.productList = append(r.productList, prd4)
+	r.productList = append(r.productList, prd5)
+	r.productList = append(r.productList, prd6)
 }
