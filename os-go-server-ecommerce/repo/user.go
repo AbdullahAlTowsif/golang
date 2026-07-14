@@ -1,12 +1,19 @@
 package repo
 
+import (
+	"database/sql"
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
+
 type User struct {
-	ID          int    `json:"id"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	IsShopOwner bool `json:"is_shop_owner"`
+	ID          int    `json:"id" db:"id"`
+	FirstName   string `json:"first_name" db:"first_name"`
+	LastName    string `json:"last_name" db:"last_name"`
+	Email       string `json:"email" db:"email"`
+	Password    string `json:"password" db:"password"`
+	IsShopOwner bool   `json:"is_shop_owner" db:"is_shop_owner"`
 }
 
 type UserRepo interface {
@@ -18,30 +25,76 @@ type UserRepo interface {
 }
 
 type userRepo struct {
-	users []User
+	// users []User
+	dbCon *sqlx.DB
 }
 
-func NewUserRepo() UserRepo {
-	return &userRepo{}
+func NewUserRepo(dbCon *sqlx.DB) UserRepo {
+	return &userRepo{
+		dbCon: dbCon,
+	}
 }
+
+// func (r userRepo) Create(user User) (*User, error) {
+// 	if user.ID != 0 {
+// 		return &user, nil
+// 	}
+
+// 	user.ID = len(r.users) + 1
+
+// 	r.users = append(r.users, user)
+// 	return &user, nil
+// }
 
 func (r userRepo) Create(user User) (*User, error) {
-	if user.ID != 0 {
-		return &user, nil
+	query := `
+	INSERT INTO users (first_name, last_name, email, password, is_shop_owner)
+	VALUES (:first_name, :last_name, :email, :password, :is_shop_owner)
+	RETURNING id
+	`
+
+	// execute named query
+	var userId int
+	rows, err := r.dbCon.NamedQuery(query, user)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
 
-	user.ID = len(r.users) + 1
+	if rows.Next() {
+		rows.Scan(&userId)
+	}
 
-	r.users = append(r.users, user)
+	user.ID = userId
 	return &user, nil
 }
 
-
 func (r *userRepo) Find(email, password string) (*User, error) {
-	for _, u := range r.users {
-		if u.Email == email && u.Password == password {
-			return &u, nil
+	var user User
+
+	query := `
+	SELECT id, first_name, last_name, email, password, is_shop_owner
+	FROM users
+	WHERE email = $1 AND password = $2
+	LIMIT 1
+	`
+
+	err := r.dbCon.Get(&user, query, email, password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
 		}
+		return nil, err
 	}
-	return nil, nil
+	return &user, nil
 }
+
+// func (r *userRepo) Find(email, password string) (*User, error) {
+// 	for _, u := range r.users {
+// 		if u.Email == email && u.Password == password {
+// 			return &u, nil
+// 		}
+// 	}
+// 	return nil, nil
+// }
