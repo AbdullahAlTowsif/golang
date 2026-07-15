@@ -44,6 +44,7 @@ func (h *Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
+		fmt.Println(err)
 		util.SendError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}

@@ -1,11 +1,17 @@
 package repo
 
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+)
+
 type Product struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	ImgUrl      string  `json:"imageUrl"`
+	ID          int     `json:"id" db:"id"`
+	Title       string  `json:"title" db:"title"`
+	Description string  `json:"description" db:"description"`
+	Price       float64 `json:"price" db:"price"`
+	ImgUrl      string  `json:"imageUrl" db:"image_url"`
 }
 
 type ProductRepo interface {
@@ -17,110 +23,88 @@ type ProductRepo interface {
 }
 
 type productRepo struct {
-	productList []*Product
+	// productList []*Product
+	dbCon *sqlx.DB
 }
 
-func NewProductRepo() ProductRepo {
-	repo := &productRepo{}
-
-	generateInitialProducts(repo)
-	return repo
+func NewProductRepo(dbCon *sqlx.DB) ProductRepo {
+	return &productRepo{
+		dbCon: dbCon,
+	}
 }
 
 func (r *productRepo) Create(p Product) (*Product, error) {
-	p.ID = len(r.productList) + 1
-	r.productList = append(r.productList, &p)
+	query := `
+		INSERT INTO products (title, description, price, image_url)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id;
+	`
+
+	row := r.dbCon.QueryRow(query, p.Title, p.Description, p.Price, p.ImgUrl)
+	err := row.Scan(&p.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &p, nil
+
 }
 
 func (r *productRepo) Get(productId int) (*Product, error) {
-	for _, product := range r.productList {
-		if product.ID == productId {
-			return product, nil
-		}
-	}
+	var prd Product
+	query := `
+	SELECT id, title, description, price, image_url FROM products
+	WHERE id = $1
+	`
 
-	return nil, nil
+	err := r.dbCon.Get(&prd, query, productId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, nil
+	}
+	return &prd, nil
 }
 
 func (r *productRepo) List() ([]*Product, error) {
-	return r.productList, nil
+	var prdList []*Product
+	query := `
+	SELECT id, title, description, price, image_url FROM products
+	`
+
+	err := r.dbCon.Select(&prdList, query)
+	if err != nil {
+		return nil, nil
+	}
+	return prdList, nil
 }
 
 func (r *productRepo) Delete(productId int) error {
-	var tempList []*Product
-
-	for _, product := range r.productList {
-		if product.ID != productId {
-			tempList = append(tempList, product)
-		}
+	query := `
+	DELETE FROM products WHERE id = $1
+	`
+	_, err := r.dbCon.Exec(query, productId)
+	if err != nil {
+		return err
 	}
-	r.productList = tempList
 	return nil
 }
 
 func (r *productRepo) Update(product Product) (*Product, error) {
-	for idx, p := range r.productList {
-		if p.ID == product.ID {
-			r.productList[idx] = &product
-		}
+	query := `
+	UPDATE products
+	SET title=$1, description=$2, price=$3, image_url=$4
+	WHERE id=$5
+	RETURNING id = $5
+	`
+
+	row := r.dbCon.QueryRow(query, product.Title, product.Description, product.Price, product.ImgUrl, product.ID)
+	err := row.Err()
+
+	if err != nil {
+		return nil, err
 	}
 	return &product, nil
-}
-
-func generateInitialProducts(r *productRepo) {
-	prd1 := &Product{
-		ID:          1,
-		Title:       "Orange",
-		Description: "Orange is Yummy! I love orange",
-		Price:       100,
-		ImgUrl:      "https://www.chemwatch.net/wp-content/uploads/2021/11/image-6-1024x682.jpeg",
-	}
-
-	prd2 := &Product{
-		ID:          2,
-		Title:       "Apple",
-		Description: "Apple is Yummy! I love Apple",
-		Price:       120,
-		ImgUrl:      "https://cdn.mos.cms.futurecdn.net/38Moe9n3b72uVEf2Ti7KmV.jpg",
-	}
-
-	prd3 := &Product{
-		ID:          3,
-		Title:       "Banana",
-		Description: "Banana is Yummy! I love Banana",
-		Price:       20,
-		ImgUrl:      "https://www.dole.com/sites/default/files/media/2025-01/banana-cavendish_0.png",
-	}
-
-	prd4 := &Product{
-		ID:          4,
-		Title:       "Grape",
-		Description: "Grape is Yummy! I love Grape",
-		Price:       180,
-		ImgUrl:      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Grapes%2C_Rostov-on-Don%2C_Russia.jpg/1280px-Grapes%2C_Rostov-on-Don%2C_Russia.jpg",
-	}
-
-	prd5 := &Product{
-		ID:          5,
-		Title:       "Mango",
-		Description: "Mango is my favorite! I love Mango",
-		Price:       80,
-		ImgUrl:      "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
-	}
-
-	prd6 := &Product{
-		ID:          6,
-		Title:       "Jackfruit",
-		Description: "Jackfruit is Yummy! I love Jackfruit",
-		Price:       140,
-		ImgUrl:      "https://www.gardenia.net/wp-content/uploads/2025/05/shutterstock_2453997129.jpg",
-	}
-
-	r.productList = append(r.productList, prd2)
-	r.productList = append(r.productList, prd3)
-	r.productList = append(r.productList, prd1)
-	r.productList = append(r.productList, prd4)
-	r.productList = append(r.productList, prd5)
-	r.productList = append(r.productList, prd6)
 }
