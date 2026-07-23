@@ -25,7 +25,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.userRepo.Find(req.Email, req.Password)
 	if user == nil {
-		http.Error(w, "Inavlid Credentials", http.StatusBadRequest)
+		util.SendError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
