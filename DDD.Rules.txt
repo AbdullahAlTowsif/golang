@@ -1,0 +1,4 @@
+DDD = Domain Driven Design
+Rules:
+1. Parent will never access directly the child
+2. Child can access parent or grand parent or grand grand parent.
