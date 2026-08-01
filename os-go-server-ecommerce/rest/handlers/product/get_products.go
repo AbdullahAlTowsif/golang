@@ -4,10 +4,12 @@ import (
 	"ecommerce/util"
 	"net/http"
 	"strconv"
+	"sync"
+	// "time"
 )
 
 // when we use go routine, we need to declare cnt as global variable
-// var cnt int64
+var cnt int64
 
 func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	reqQuery := r.URL.Query()
@@ -31,22 +33,32 @@ func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cnt, err := h.svc.Count()
-	if err != nil {
-		util.SendError(w, http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
+	// cnt, err := h.svc.Count()
+	// if err != nil {
+	// 	util.SendError(w, http.StatusInternalServerError, "Internal Server Error")
+	// 	return
+	// }
+
+	var wg sync.WaitGroup
+
+	// if there are multiple go routine add --> wg.Add(1) --> before each go routine function
+	wg.Add(1)
 
 	// if use go routine
-	// go func() {
-	// 	cnt1, err := h.svc.Count()
-	// 	if err != nil {
-	// 		util.SendError(w, http.StatusInternalServerError, "Internal Server Error")
-	// 		return
-	// 	}
-	// 	cnt = cnt1
-	// }()
-	// time.Sleep(1 * time.Second)
+	go func() {
+		// defer wg.Add(-1) // way 2
+		defer wg.Done() // way 3
+
+		cnt1, err := h.svc.Count()
+		if err != nil {
+			util.SendError(w, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+		cnt = cnt1
+		// wg.Add(-1) // way 1
+	}()
+	// time.Sleep(2 * time.Second)
+	wg.Wait()
 
 	util.SendPage(w, productList, page, limit, cnt)
 }
