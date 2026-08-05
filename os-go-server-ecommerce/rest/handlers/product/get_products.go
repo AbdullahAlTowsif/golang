@@ -40,6 +40,7 @@ func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	// if there are multiple go routine add --> wg.Add(1) --> before each go routine function
 	wg.Add(1)
@@ -48,6 +49,9 @@ func (h *Handler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		// defer wg.Add(-1) // way 2
 		defer wg.Done() // way 3
+
+		mu.Lock()
+		defer mu.Unlock()
 
 		cnt1, err := h.svc.Count()
 		if err != nil {
