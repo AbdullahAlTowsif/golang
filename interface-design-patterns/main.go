@@ -69,3 +69,12 @@ func main() {
 	usr1.PrintDetails()
 	usr2.PrintDetails()
 }
+
+
+/*
+ts => interface for data shape
+go => interface for behavior
+
+struct --> think of it like a class --> OOP
+interface --> think of it like a contract/behavior --> OOP
+*/
